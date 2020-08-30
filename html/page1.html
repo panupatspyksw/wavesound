@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+<META NAME="keywords" CONTENT="theweeknd, kissland, afterhours ,trilogy, theweeknd album">
+<META NAME="description" CONTENT="soundbloud music visual">
+<META NAME="generator" CONTENT="JAVASCRIPT LIBRARY : ZIM.JS CREATE.JS BARBA.JS">
+
+<meta charset="utf-8" />
+<title>KISS LAND</title>
+
+<!-- Welcome to ZIM at https://zimjs.com - Code Interactive Media Pizzazz! 				-->
+<!-- ZIM runs on the HTML Canvas powered by JavaScript and CreateJS https://createjs.com -->
+<!-- Founded by Inventor Dan Zen - https://danzen.com - Canadian New Media Award Winner 	-->
+<!-- ZIM is free to use. You can donate to help improve ZIM at https://zimjs.com/donate 	-->
+
+<!-- as of ZIM 4.3.0 load createjs namespace first -->
+<script src="https://code.createjs.com/createjs-2015.11.26.min.js"></script>
+<script>var zon = true; // true for comments from zim code</script>
+<script src="https://d309knd7es5f10.cloudfront.net/zim_6.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+<!-- use zimjs.com/code/distill for minified individual functions! -->
+<link rel="stylesheet" href="../css/main.css">
+<style>
+
+	body {
+        overflow: hidden;
+        width: 100% auto;
+        height: 100vh;
+        background: linear-gradient(180deg, rgba(7,45,31,1) 0%, rgba(50,109,78,1) 100%);
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    canvas{
+        background:url(../img/DmFJBk2V4AAfldH.jpg);
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+    }
+
+</style>
+
+
+</head>
+
+<body data-barba="wrapper">
+    <ul class="transition">
+        <li></li>
+        <li></li>
+        <li></li>
+
+    </ul>
+    <main data-barba="container" data-barba-namespace="home">
+
+    <div class="title">
+        <div><img class="artist" src="../img/TheWeeknd.png" alt=""></div>
+        <div><img class="albumname" src="../img/Group 9.png" alt=""></div>
+    </div>
+    <script>
+
+        // SCALING OPTIONS
+        // scaling can have values as follows with full being the default
+        // "fit"		sets canvas and stage to dimensions and scales to fit inside window size
+        // "outside"	sets canvas and stage to dimensions and scales to fit outside window size
+        // "full"		sets stage to window size with no scaling
+        // "tagID"		add canvas to HTML tag of ID - set to dimensions if provided - no scaling
+        
+        var pause = false;
+        var scaling = "fit"; // fit scales to fit the browser window while keeping the aspect ratio
+        var width = window.innerWidth; // can go higher...
+        var height = window.innerHeight/1.7;
+        var frame = new zim.Frame("fit", width, height); // see docs for more options and info
+        frame.on("ready", function() {
+            zog("ready from ZIM Frame");
+        
+            var stage = frame.stage;
+            var stageW = frame.width;
+            var stageH = frame.height;
+            // frame.color = frame.darker;
+        
+            // create a little waiting component while sound loads
+            var waiter = new zim.Waiter({container:stage, color:frame.pink, corner:0,}).show();
+            
+            // load a sound
+            // for now, the SoundWave uses HTML Audio as opposed to Web Audio so set HTML Audio as the default Sound
+            // we are working to adjust this so Web Audio will work and this line will not be needed
+            createjs.Sound.registerPlugins([createjs.HTMLAudioPlugin]);
+            frame.loadAssets("../mp3/05. The Weeknd - Belong To The World [HD].mp3", null, false);
+            frame.on("complete", function() {
+        
+                // hide the waiter
+                waiter.hide();
+                var button = new zim.Button({label:"PLAY", color:frame.blue, rollColor:"red", corner:0}).center(stage);
+                button.on("click", function() {
+                    document.querySelector(".hidden").classList.remove("hidden");
+                    button.removeFrom(stage);
+                    // play the song - the results of the playing song is what we pass into the SoundWave
+                    var song = frame.asset("../mp3/05. The Weeknd - Belong To The World [HD].mp3").play({volume:20, loop:true, loopCount:100});
+                    song.loop = true;
+                    document.querySelector("#play").addEventListener("click",function(){
+                        song.paused = false;
+                    })
+                    document.querySelector("#stop").addEventListener("click",function(){
+                        song.paused = true;
+                    })
+                    // song.paused = true;
+                    // create a SoundWave object to analyse the sound
+                    // num, input, include, smoothing, min, max, operation
+                    var soundWave = new zim.SoundWave(60, song);
+                    
+                    song.on("complete", function() {
+                        console.log("play again");
+                        song.play();
+                    })
+
+                    // when the analyser is ready make and animate bars
+                    soundWave.on("ready", function() {
+                        // create a container for the bars so we can add them and then center the container on the stage
+                        var bars = new zim.Container();
+                        var width = stageW*.9; // leave a little around the sides...
+                        var gap = 10;
+                        // we can use soundWave.num to tell us how many bars to make
+                        zim.loop(soundWave.num, function(i, total) {
+                            // make each bar
+                            var bar = new zim.Rectangle(width/total-gap, 200, "white");
+                            // move the bar over a little each time and set the registration point to the bottom
+                            bar.addTo(bars).mov(i*width/total).reg(0,200);
+                            
+        
+                        })
+                        bars.center(stage);
+        
+                        // animate the bars in a Ticker
+                        zim.Ticker.add(function() {
+                            // call the calculate() method of the soundWave
+                            var data = soundWave.calculate();
+                            // loop throught the bars and set the height of the bar to the associated soundWave data
+                            // we multiply by 2 to magnify the data a little
+                            zim.loop(bars, function(bar, i) {
+                                bar.heightOnly = data[i]*1;
+                            });
+                        }); // end ticker
+        
+        
+        
+                        new zim.Label({
+                            text:"The Weeknd - Belond To The World",
+                            color:frame.white
+                        })
+                            .center(stage)
+                            .mov(0,150)
+                            .animate({
+                                obj:{alpha:0},
+                                from:true,
+                                wait:1000,
+                                time:3000,
+                                rewindWait:5000,
+                                rewind:true
+                            });
+                    }); // end soundWave ready
+                })
+        
+        
+        
+            }); // end sound complete
+        
+        }); // end of ready
+        </script>
+ 
+        <div class="controller">
+            <div class="bar hidden">
+                <a href="page3.html"><div class="btn"><i class="fa fa-step-backward" aria-hidden="true"></i></div></a>
+                <div class="btn" id="stop"><i class="fa fa-pause" aria-hidden="true"></i></div>
+                <div class="btn" id="play"><i class="fa fa-play" aria-hidden="true"></i></div>
+                <a href="page2.html"><div class="btn"><i class="fa fa-step-forward" aria-hidden="true"></i></div></a>
+            </div>
+        </div>
+        <div class="episode">
+            <div class="epbar">
+                <a href="page1.html"><div class="ep">I</div></a>
+                <a href="page2.html"><div class="ep">II</div></a>
+                <a href="page3.html"><div class="ep">III</div></a>
+            </div>
+        </div>
+
+    </main>
+
+        <!-- Barba Core -->
+        <script src="https://unpkg.com/@barba/core"></script>
+
+        <!-- GSAP for animation -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.2.4/gsap.min.js"></script>
+
+        <script src="../js/pagetransition.js"></script>
+        
+</body>
+</html>
